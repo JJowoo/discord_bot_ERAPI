@@ -4,7 +4,7 @@ from discord.ext import commands, tasks
 from ERBSClient import ErbsClient
 from discord_bot_data import *
 
-TOKEN = 'ODExOTkzMzg4MDAxMjYzNzE2.GRoenR.YELSKRXiB2WhNWJLGm6JQYtj4n5sJHKrW6XO5g'
+TOKEN = ''
 BOT_PREFIX=('!')
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=discord.Intents.all())
 
