@@ -25,9 +25,49 @@ async  def rank(ctx,*,message:str):
     await ctx.send(embed=embedVar)
 
 @bot.command()
+async def 랭크(ctx,*,message:str):
+    await rank(ctx,message)
+
+@bot.command()
+async def normal(ctx,*,message:str):
+    embedVar=search_user_normal(message.split()[0])
+    await ctx.send(embed=embedVar)
+
+@bot.command()
+async def 노말(ctx,*,message:str):
+    message= f'{message}'
+    await normal(ctx,message=message)
+
+@bot.command()
 async def games(ctx,*,message:str):
     embedVar=search_user_games(message.split()[0])
     await ctx.send(embed=embedVar)
+
+@bot.command()
+async def 전적(ctx,*,message:str):
+    await games(ctx,message)
+
+# @bot.command()
+# async def most(ctx,*,message:str):
+#     embedVar=search_user_ranking(message.split()[0])
+#     await ctx.send(embed=embedVar)
+
+@bot.command()
+async def erhelp(ctx):
+    embedVar = discord.Embed(title='명령어 목록', color=0x0db6e0)
+    embedVar.add_field(name='!rank [닉네임], !랭크 [닉네임]', value='랭크 게임 정보를 보여줍니다', inline=False)
+    embedVar.add_field(name='!normal [닉네임], !노말 [닉네임]', value='노말 게임 정보를 보여줍니다', inline=False)
+    embedVar.add_field(name='!games [닉네임], !전적 [닉네임]', value='최근 10게임 전적을 보여줍니다', inline=False)
+
+    await ctx.send(embed=embedVar)
+
+def search_user_most(nickname):
+    if not nickname:
+        return
+    user_num = api_client.get_user_num(nickname)
+
+
+
 
 def search_user_ranking(nickname):
     if not nickname:
@@ -70,35 +110,55 @@ def search_user_ranking(nickname):
         return embedVar
         pass
 
-    # fetch and parse normal game stats
-    normal_user_stats = api_client.get_user_stats(user_num, NORMAL_SEASON)
-    # for i in range(3):
-    #     try:
-    #         matching_team_mode = int(normal_user_stats['userStats'][i]['matchingTeamMode'])
-    #         normal_mmr[matching_team_mode - 1] = normal_user_stats['userStats'][i]['mmr']
-    #     except:
-    #         pass
-    try:
-        print(normal_user_stats['userStats'][0]['mmr'])
-        normal_mmr = normal_user_stats['userStats'][0]['mmr']
-    except:
-        pass
-
-    # most_character_code_stats=api_client.get_user_stats(user_num, SEASON_10)
-    # try:
-    #     most_character_code = most_character_code_stats['userStats'][0]['characterStats'][0]['characterCode']
-    #     print(most_character_code)
-    # except:
-    #     pass
-
     embedVar = discord.Embed(title=nickname.upper(), color=0x0db6e0)
     embedVar.set_thumbnail(url=COMMON_STRINGS_DICT[str(most_character_code)])
     embedVar.add_field(name='Season 1.0 랭크', value=get_tier(ranked_mmr), inline=True)
-    embedVar.add_field(name='노말랭크', value='{0} MMR'.format(normal_mmr), inline=True)
     embedVar.add_field(name='상위 랭킹', value='상위 {0}%'.format(ranking_percent*100), inline=False)
     embedVar.add_field(name='평균 킬수', value='{0}킬'.format(average_kill), inline=False)
     embedVar.add_field(name='평균 사냥수', value='{0}킬'.format(average_hunt), inline=False)
     embedVar.add_field(name='1등 확률', value='{0}%'.format(top1_percent*100), inline=False)
+    return embedVar
+
+def search_user_normal(nickname):
+    if not nickname:
+        return
+    user_num = api_client.get_user_num(nickname)
+
+    normal_user_stats = api_client.get_user_stats(user_num, NORMAL_SEASON)
+
+    total_game = 0
+    most_character_code = 0
+    ranking_percent = 0
+    average_rank = 0
+    average_kill = 0
+    average_hunt = 0
+    top1_percent = 0.0
+
+
+    try:
+        for i in range(3):
+            if(normal_user_stats['userStats'][i]['matchingTeamMode']!=3):
+                continue
+            else:
+                total_game = normal_user_stats['userStats'][i]['totalGames']
+                most_character_code = normal_user_stats['userStats'][i]['characterStats'][0]['characterCode']
+                ranking_percent = normal_user_stats['userStats'][i]['rankPercent']
+                average_rank = normal_user_stats['userStats'][i]['averageRank']
+                average_kill = normal_user_stats['userStats'][i]['averageKills']
+                average_hunt = normal_user_stats['userStats'][i]['averageHunts']
+                top1_percent = normal_user_stats['userStats'][i]['top1']
+
+    except:
+        pass
+
+    embedVar = discord.Embed(title=nickname.upper(), color=0x0db6e0)
+    embedVar.set_thumbnail(url=COMMON_STRINGS_DICT[str(most_character_code)])
+    embedVar.add_field(name='노말 게임 플레이 수', value='{0}'.format(total_game), inline=True)
+    embedVar.add_field(name='상위 랭킹', value='상위 {0}%'.format(ranking_percent * 100), inline=False)
+    embedVar.add_field(name='평균 순위', value='{0}등'.format(average_rank), inline=False)
+    embedVar.add_field(name='평균 킬수', value='{0}킬'.format(average_kill), inline=False)
+    embedVar.add_field(name='평균 사냥수', value='{0}킬'.format(average_hunt), inline=False)
+    embedVar.add_field(name='1등 확률', value='{0}%'.format(top1_percent * 100), inline=False)
     return embedVar
 
 def search_user_games(nickname):
