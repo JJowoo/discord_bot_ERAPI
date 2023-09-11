@@ -6,7 +6,7 @@ from ERBSClient import ErbsClient
 from discord_bot_data import *
 
 TOKEN = ''
-BOT_PREFIX=('!')
+BOT_PREFIX=('/')
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=discord.Intents.all())
 
 api_key_file = open('api_key')  # file containing one line of the ER:BS api key
@@ -16,7 +16,6 @@ api_client = ErbsClient(api_key=private_api_key, version='v1')
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
-
 
 
 @bot.command()
@@ -55,11 +54,11 @@ async def 전적(ctx,*,message:str):
 #     await ctx.send(embed=embedVar)
 
 @bot.command()
-async def erhelp(ctx):
+async def 이리도움말(ctx):
     embedVar = discord.Embed(title='명령어 목록', color=0x0db6e0)
-    embedVar.add_field(name='!rank [닉네임], !랭크 [닉네임]', value='랭크 게임 정보를 보여줍니다', inline=False)
-    embedVar.add_field(name='!normal [닉네임], !노말 [닉네임]', value='노말 게임 정보를 보여줍니다', inline=False)
-    embedVar.add_field(name='!games [닉네임], !전적 [닉네임]', value='최근 10게임 전적을 보여줍니다', inline=False)
+    embedVar.add_field(name='/rank [닉네임], /랭크 [닉네임]', value='랭크 게임 정보를 보여줍니다', inline=False)
+    embedVar.add_field(name='/normal [닉네임], /노말 [닉네임]', value='노말 게임 정보를 보여줍니다', inline=False)
+    embedVar.add_field(name='/games [닉네임], /전적 [닉네임]', value='최근 10게임 전적을 보여줍니다', inline=False)
 
     await ctx.send(embed=embedVar)
 
@@ -67,6 +66,14 @@ def search_user_most(nickname):
     if not nickname:
         return
     user_num = api_client.get_user_num(nickname)
+
+    character_code=[0,0,0]
+    usages=[0,0,0]
+    max_kill=[0,0,0]
+    top1=[0,0,0]
+    top3=[0,0,0]
+
+
 
 
 
@@ -296,34 +303,71 @@ def get_tier(mmr):
 games = {}  # {channel_id: (player1, player1_choice, player2)}
 
 @bot.command()
-async def start(ctx, opponent: discord.Member):
+async def 가위바위보(ctx, opponent: discord.Member):
     if ctx.channel.id in games:
         await ctx.send("이 채널에서 이미 게임이 진행 중입니다.")
         return
     games[ctx.channel.id] = (ctx.author, None, opponent)
-    await ctx.send(f"{opponent.mention}, 가위, 바위, 보 중 하나를 선택하세요!")
-
-@bot.command()
-async def 가위바위보(ctx, opponent: discord.Member):
-    await start(ctx, opponent)
-
+    # await ctx.send(f"{opponent.mention}, 가위, 바위, 보 중 하나를 선택하세요!")
+    dm_channel = await opponent.create_dm()
+    await dm_channel.send(f"{ctx.author.mention}님이 가위바위보 게임을 신청하셨습니다. /선택 가위, /선택 바위, /선택 보 중 하나를 DM으로 보내주세요!(반드시 명령어를 입력하신 분부터 보내주세요)")
+    await ctx.send(f"{opponent.mention}, /선택 가위, /선택 바위, /선택 보 중 하나를 DM으로 보내주세요!(반드시 명령어를 입력하신 분부터 보내주세요)")
 
 @bot.command()
 async def choose(ctx, choice):
-    if ctx.channel.id not in games:
+    # DM에서만 작동
+    if not isinstance(ctx.channel, discord.DMChannel):
+        print('1')
         return
 
-    player1, player1_choice, player2 = games[ctx.channel.id]
+    # 사용자의 선택을 games 딕셔너리에서 찾기
+    game_channel_id = None
+    for channel_id, (player1, player1_choice, player2) in games.items():
+        if ctx.author == player1 or ctx.author == player2:
+            print(2)
+            game_channel_id = channel_id
+            break
+
+    # 해당 게임이 존재하지 않으면 종료
+    if game_channel_id is None:
+        await ctx.send("게임이 존재하지 않습니다.")
+        return
+
+    player1, player1_choice, player2 = games[game_channel_id]
 
     if ctx.author == player1:
-        games[ctx.channel.id] = (player1, choice, player2)
+        print(3)
+        games[game_channel_id] = (player1, choice, player2)
     elif ctx.author == player2:
         if not player1_choice:
             await ctx.send("다른 플레이어가 아직 선택하지 않았습니다.")
             return
         result = determine_winner(player1_choice, choice, player1.display_name, player2.display_name)
-        await ctx.send(result)
-        del games[ctx.channel.id]
+
+        # 결과를 해당 서버의 채널에 전송
+        game_channel = bot.get_channel(game_channel_id)
+        await game_channel.send(result)
+        del games[game_channel_id]
+
+# @bot.command()
+# async def choose(ctx, choice):
+#     if ctx.channel.id not in games:
+#         print('3')
+#         return
+#
+#     player1, player1_choice, player2 = games[ctx.channel.id]
+#
+#     if ctx.author == player1:
+#         print('1')
+#         games[ctx.channel.id] = (player1, choice, player2)
+#     elif ctx.author == player2:
+#         if not player1_choice:
+#             print('2')
+#             await ctx.send("다른 플레이어가 아직 선택하지 않았습니다.")
+#             return
+#         result = determine_winner(player1_choice, choice, player1.display_name, player2.display_name)
+#         await ctx.send(result)
+#         del games[ctx.channel.id]
 
 @bot.command()
 async def 선택(ctx, choice):
@@ -338,6 +382,7 @@ def determine_winner(choice1, choice2, player1_name, player2_name):
 
 #역할 랜덤 코드
 roles = ['탑', '정글', '미드', '원딜', '서폿']
+
 @bot.command()
 async def assign(ctx, name1: str, name2: str, name3: str, name4: str, name5: str):
     names = [name1, name2, name3, name4, name5]
@@ -345,12 +390,21 @@ async def assign(ctx, name1: str, name2: str, name3: str, name4: str, name5: str
 
     embedVar = discord.Embed(title='랜덤 포지션', color=0x0db6e0)
     for i in range(5):
-        print('{0}'.format(roles[i]))
-        print('{0}'.format(names[i]))
         embedVar.add_field(name='{0}'.format(roles[i]),value='{0}'.format(names[i]),inline=False)
 
+    await ctx.send(embed=embedVar)
 
-    #message = "\n".join([f"{role}: {name}" for role, name in assignment.items()])
+@bot.command()
+async def 랜덤포지션(ctx, name1: str, name2: str, name3: str, name4: str, name5: str):
+    await assign(ctx,name1,name2,name3,name4,name5)
+
+@bot.command()
+async def 내전도움말(ctx):
+    embedVar = discord.Embed(title='명령어 목록', color=0x0db6e0)
+    embedVar.add_field(name='/가위바위보 @[닉네임]', value='가위바위보게임을 시작합니다', inline=False)
+    embedVar.add_field(name='/선택 [가위,바위,보]', value='봇에게 개인메세지로 가위바위보를 전달합니다(개인메세지로 주셔야합니다)', inline=False)
+    embedVar.add_field(name='/랜덤포지션 [닉네임] [닉네임] [닉네임] [닉네임] [닉네임]', value='5명의 포지션을 랜덤으로 정해줍니다', inline=False)
+
     await ctx.send(embed=embedVar)
 
 bot.run(TOKEN)
