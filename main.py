@@ -1,3 +1,4 @@
+import random
 
 import discord
 from discord.ext import commands, tasks
@@ -26,7 +27,8 @@ async  def rank(ctx,*,message:str):
 
 @bot.command()
 async def 랭크(ctx,*,message:str):
-    await rank(ctx,message)
+    message=f'{message}'
+    await rank(ctx,message=message)
 
 @bot.command()
 async def normal(ctx,*,message:str):
@@ -287,6 +289,69 @@ def get_tier(mmr):
     elif Eternity <= mmr:
         tier += 'Immortal - {0} LP'.format(mmr % Eternity)
     return tier
+
+#여기 까지 이터널리턴 봇
+
+
+games = {}  # {channel_id: (player1, player1_choice, player2)}
+
+@bot.command()
+async def start(ctx, opponent: discord.Member):
+    if ctx.channel.id in games:
+        await ctx.send("이 채널에서 이미 게임이 진행 중입니다.")
+        return
+    games[ctx.channel.id] = (ctx.author, None, opponent)
+    await ctx.send(f"{opponent.mention}, 가위, 바위, 보 중 하나를 선택하세요!")
+
+@bot.command()
+async def 가위바위보(ctx, opponent: discord.Member):
+    await start(ctx, opponent)
+
+
+@bot.command()
+async def choose(ctx, choice):
+    if ctx.channel.id not in games:
+        return
+
+    player1, player1_choice, player2 = games[ctx.channel.id]
+
+    if ctx.author == player1:
+        games[ctx.channel.id] = (player1, choice, player2)
+    elif ctx.author == player2:
+        if not player1_choice:
+            await ctx.send("다른 플레이어가 아직 선택하지 않았습니다.")
+            return
+        result = determine_winner(player1_choice, choice, player1.display_name, player2.display_name)
+        await ctx.send(result)
+        del games[ctx.channel.id]
+
+@bot.command()
+async def 선택(ctx, choice):
+    await choose(ctx,choice)
+
+def determine_winner(choice1, choice2, player1_name, player2_name):
+    if choice1 == choice2:
+        return "무승부!"
+    if (choice1 == "가위" and choice2 == "보") or (choice1 == "바위" and choice2 == "가위") or (choice1 == "보" and choice2 == "바위"):
+        return f"{choice1} 선택! 승자는 {player1_name}입니다!"
+    return f"{choice2} 선택! 승자는 {player2_name}입니다!"
+
+#역할 랜덤 코드
+roles = ['탑', '정글', '미드', '원딜', '서폿']
+@bot.command()
+async def assign(ctx, name1: str, name2: str, name3: str, name4: str, name5: str):
+    names = [name1, name2, name3, name4, name5]
+    random.shuffle(names)
+
+    embedVar = discord.Embed(title='랜덤 포지션', color=0x0db6e0)
+    for i in range(5):
+        print('{0}'.format(roles[i]))
+        print('{0}'.format(names[i]))
+        embedVar.add_field(name='{0}'.format(roles[i]),value='{0}'.format(names[i]),inline=False)
+
+
+    #message = "\n".join([f"{role}: {name}" for role, name in assignment.items()])
+    await ctx.send(embed=embedVar)
 
 bot.run(TOKEN)
 
