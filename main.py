@@ -46,12 +46,12 @@ async def games(ctx,*,message:str):
 
 @bot.command()
 async def 전적(ctx,*,message:str):
-    await games(ctx,message)
+    await games(ctx,message=message)
 
-# @bot.command()
-# async def most(ctx,*,message:str):
-#     embedVar=search_user_ranking(message.split()[0])
-#     await ctx.send(embed=embedVar)
+@bot.command()
+async def most(ctx,*,message:str):
+    embedVar=search_user_most(message.split()[0])
+    await ctx.send(embed=embedVar)
 
 @bot.command()
 async def 이리도움말(ctx):
@@ -72,6 +72,34 @@ def search_user_most(nickname):
     max_kill=[0,0,0]
     top1=[0,0,0]
     top3=[0,0,0]
+    average_rank=[0,0,0]
+
+    ranked_user_stats = api_client.get_user_stats(user_num, SEASON_10)
+
+    for i in range(3):
+        try:
+            character_code[i] = int(ranked_user_stats['userStats'][0]['characterStats'][i]['characterCode'])
+            usages[i]=int(ranked_user_stats['userStats'][0]['characterStats'][i]['usages'])
+            max_kill[i]=int(ranked_user_stats['userStats'][0]['characterStats'][i]['maxKillings'])
+            top3[i]=int(ranked_user_stats['userStats'][0]['characterStats'][i]['top3'])
+            top1[i]=int(ranked_user_stats['userStats'][0]['characterStats'][i]['wins'])
+            average_rank[i]=int(ranked_user_stats['userStats'][0]['characterStats'][i]['averageRank'])
+        except:
+            embedVar = discord.Embed(title=nickname.upper(), description='랭크 정보가 없습니다', color=0x0db6e0)
+            return embedVar
+            pass
+
+        embedVar = discord.Embed(title=nickname.upper(), color=0x0db6e0)
+        embedVar.set_thumbnail(url=COMMON_STRINGS_DICT[str(character_code[0])])
+
+        for i in range(3):
+            embedVar.add_field(name='캐릭터', value='{0}'.format(CHARACTER_LIST[int(character_code[i])]), inline=True)
+            embedVar.add_field(name='플레이 수', value='{0}회'.format(usages[i]), inline=True)
+            embedVar.add_field(name='최다 킬', value='{0}킬'.format(max_kill[i]), inline=True)
+            embedVar.add_field(name='top3 확률', value='{0}%'.format(float(top3[i]/usages[i])), inline=True)
+            embedVar.add_field(name='top1 횟수', value='{0}회'.format(top1[i]), inline=True)
+            embedVar.add_field(name='평균등수', value='{0}등'.format(average_rank[i]), inline=True)
+            embedVar.add_field(name='inline=False)
 
 
 
