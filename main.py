@@ -5,7 +5,7 @@ from discord.ext import commands, tasks
 from ERBSClient import ErbsClient
 from discord_bot_data import *
 
-TOKEN = ''
+TOKEN = 'ODA5MDQ4OTY3ODQwMDA2MTQ1.GdOWuP.TYhB22RimQHtFtRhOFD6JxJXNbgMQZTNWFkLYA'
 BOT_PREFIX=('/')
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=discord.Intents.all())
 
@@ -40,13 +40,14 @@ async def 노말(ctx,*,message:str):
     await normal(ctx,message=message)
 
 @bot.command()
-async def games(ctx,*,message:str):
+async def gamehis(ctx,*,message:str):
     embedVar=search_user_games(message.split()[0])
     await ctx.send(embed=embedVar)
 
 @bot.command()
 async def 전적(ctx,*,message:str):
-    await games(ctx,message=message)
+    message = f'{message}'
+    await gamehis(ctx, message=message)
 
 @bot.command()
 async def most(ctx,*,message:str):
@@ -54,11 +55,17 @@ async def most(ctx,*,message:str):
     await ctx.send(embed=embedVar)
 
 @bot.command()
+async def 모스트(ctx,*,message:str):
+    message = f'{message}'
+    await most(ctx, message=message)
+
+@bot.command()
 async def 이리도움말(ctx):
     embedVar = discord.Embed(title='명령어 목록', color=0x0db6e0)
     embedVar.add_field(name='/rank [닉네임], /랭크 [닉네임]', value='랭크 게임 정보를 보여줍니다', inline=False)
     embedVar.add_field(name='/normal [닉네임], /노말 [닉네임]', value='노말 게임 정보를 보여줍니다', inline=False)
-    embedVar.add_field(name='/games [닉네임], /전적 [닉네임]', value='최근 10게임 전적을 보여줍니다', inline=False)
+    embedVar.add_field(name='/gamehis [닉네임], /전적 [닉네임]', value='최근 10게임 전적을 보여줍니다', inline=False)
+    embedVar.add_field(name='/most [닉네임], /모스트 [닉네임]', value='랭크에서의 캐릭터 모스트 top3정보를 보여줍니다', inline=False)
 
     await ctx.send(embed=embedVar)
 
@@ -84,27 +91,28 @@ def search_user_most(nickname):
             top3[i]=int(ranked_user_stats['userStats'][0]['characterStats'][i]['top3'])
             top1[i]=int(ranked_user_stats['userStats'][0]['characterStats'][i]['wins'])
             average_rank[i]=int(ranked_user_stats['userStats'][0]['characterStats'][i]['averageRank'])
+            print(character_code[i])
+            print(i)
         except:
             embedVar = discord.Embed(title=nickname.upper(), description='랭크 정보가 없습니다', color=0x0db6e0)
             return embedVar
             pass
 
-        embedVar = discord.Embed(title=nickname.upper(), color=0x0db6e0)
-        embedVar.set_thumbnail(url=COMMON_STRINGS_DICT[str(character_code[0])])
+    embedVar = discord.Embed(title=nickname.upper(), color=0x0db6e0)
+    embedVar.set_thumbnail(url=COMMON_STRINGS_DICT[str(character_code[0])])
 
-        for i in range(3):
-            embedVar.add_field(name='캐릭터', value='{0}'.format(CHARACTER_LIST[int(character_code[i])]), inline=True)
-            embedVar.add_field(name='플레이 수', value='{0}회'.format(usages[i]), inline=True)
-            embedVar.add_field(name='최다 킬', value='{0}킬'.format(max_kill[i]), inline=True)
-            embedVar.add_field(name='top3 확률', value='{0}%'.format(float(top3[i]/usages[i])), inline=True)
-            embedVar.add_field(name='top1 횟수', value='{0}회'.format(top1[i]), inline=True)
-            embedVar.add_field(name='평균등수', value='{0}등'.format(average_rank[i]), inline=True)
-            embedVar.add_field(name='inline=False)
-
-
-
-
-
+    for i in range(3):
+        embedVar.add_field(name='캐릭터', value='{0}'.format(CHARACTER_LIST[int(character_code[i])]), inline=True)
+        embedVar.add_field(name='플레이 수', value='{0}회'.format(usages[i]), inline=True)
+        embedVar.add_field(name='최다 킬', value='{0}킬'.format(max_kill[i]), inline=True)
+        if(usages[i]==0):
+            embedVar.add_field(name='top3 확률', value='{0}%'.format(0), inline=True)
+        else:
+            embedVar.add_field(name='top3 확률', value='{0}%'.format(round(float(top3[i]/usages[i]*100),2)), inline=True)
+        embedVar.add_field(name='top1 횟수', value='{0}회'.format(top1[i]), inline=True)
+        embedVar.add_field(name='평균등수', value='{0}등'.format(average_rank[i]), inline=True)
+        embedVar.add_field(name='',value='',inline=False)
+    return embedVar
 
 def search_user_ranking(nickname):
     if not nickname:
@@ -165,7 +173,9 @@ def search_user_normal(nickname):
 
     total_game = 0
     most_character_code = 0
-    ranking_percent = 0
+    #ranking_percent = 0
+    ranking=0
+    rank_size=1
     average_rank = 0
     average_kill = 0
     average_hunt = 0
@@ -179,7 +189,9 @@ def search_user_normal(nickname):
             else:
                 total_game = normal_user_stats['userStats'][i]['totalGames']
                 most_character_code = normal_user_stats['userStats'][i]['characterStats'][0]['characterCode']
-                ranking_percent = normal_user_stats['userStats'][i]['rankPercent']
+                #ranking_percent = normal_user_stats['userStats'][i]['rankPercent']
+                ranking=normal_user_stats['userStats'][i]['rank']
+                rank_size=normal_user_stats['userStats'][i]['rankSize']
                 average_rank = normal_user_stats['userStats'][i]['averageRank']
                 average_kill = normal_user_stats['userStats'][i]['averageKills']
                 average_hunt = normal_user_stats['userStats'][i]['averageHunts']
@@ -191,7 +203,7 @@ def search_user_normal(nickname):
     embedVar = discord.Embed(title=nickname.upper(), color=0x0db6e0)
     embedVar.set_thumbnail(url=COMMON_STRINGS_DICT[str(most_character_code)])
     embedVar.add_field(name='노말 게임 플레이 수', value='{0}'.format(total_game), inline=True)
-    embedVar.add_field(name='상위 랭킹', value='상위 {0}%'.format(ranking_percent * 100), inline=False)
+    embedVar.add_field(name='상위 랭킹', value='상위 {0}%'.format(float(ranking/rank_size * 100),2), inline=False)
     embedVar.add_field(name='평균 순위', value='{0}등'.format(average_rank), inline=False)
     embedVar.add_field(name='평균 킬수', value='{0}킬'.format(average_kill), inline=False)
     embedVar.add_field(name='평균 사냥수', value='{0}킬'.format(average_hunt), inline=False)
@@ -218,31 +230,9 @@ def search_user_games(nickname):
             game_type = 'Normal'
         elif game_type == SEASON_10:
             game_type = 'Ranked'
+            mmr_change = int(game['mmrGain'])
         else:
             game_type = 'unknown'
-        # elif game_type == SEASON_1:
-        #     game_type = 'Ranked (Season 1)'
-        # elif game_type == PRE_SEASON_2:
-        #     game_type = 'Ranked (Pre-Season 2)'
-        # elif game_type == SEASON_2:
-        #     game_type = 'Ranked (Season 2)'
-        # elif game_type == PRE_SEASON_3:
-        #     game_type = 'Ranked (Pre-Season 3)'
-        # elif game_type == SEASON_3:
-        #     game_type = 'Ranked'
-        # elif game_type == PRE_SEASON_4:
-        #     game_type = 'Ranked (Pre-Season 4)'
-        # elif game_type == SEASON_4:
-        #     game_type = 'Ranked'
-
-        # # check game mode
-        # game_team_mode = int(game['matchingTeamMode'])
-        # if game_team_mode == SOLO_MODE:
-        #     game_team_mode = 'Solo'
-        # elif game_team_mode == DUO_MODE:
-        #     game_team_mode = 'Duo'
-        # elif game_team_mode == SQUAD_MODE:
-        #     game_team_mode = 'Squad'
 
         # check game rank
         game_rank = int(game['gameRank'])
@@ -256,12 +246,20 @@ def search_user_games(nickname):
         # check game character
         game_character = CHARACTER_LIST[int(game['characterNum'])]
 
-        embedVar.add_field(
-            name='{0}'.format(game_type),
-            value='{0}: 등수 #{1} - ({2}/{3}/{4}/{5})'.format(game_character, game_rank, game_kills, game_assists,
-                                                          game_monster_kills,game_weapon_level),
-            inline=False
-        )
+        if game_type=='Ranked':
+            embedVar.add_field(
+                name='{0}    {1}'.format(game_type,mmr_change),
+                value='{0}: 등수 #{1} - ({2}/{3}/{4}/{5})'.format(game_character, game_rank, game_kills, game_assists,
+                                                                game_monster_kills, game_weapon_level),
+                inline=False
+            )
+        else:
+             embedVar.add_field(
+                name='{0}'.format(game_type),
+                value='{0}: 등수 #{1} - ({2}/{3}/{4}/{5})'.format(game_character, game_rank, game_kills, game_assists,
+                                                              game_monster_kills,game_weapon_level),
+                inline=False
+            )
     return embedVar
 
 
@@ -318,7 +316,7 @@ def get_tier(mmr):
     elif DIAMOND_1 <= mmr < MITHRIL:
         tier += 'Diamond 1 - {0} LP'.format(mmr % DIAMOND_1)
     elif MITHRIL <= mmr < DEMIGOD:
-        tier += 'Diamond 1 - {0} LP'.format(mmr % DIAMOND_1)
+        tier += 'Mithril - {0} LP'.format(mmr % MITHRIL)
     elif DEMIGOD <= mmr < Eternity:
         tier += 'Titan - {0} LP'.format(mmr % DEMIGOD)
     elif Eternity <= mmr:
@@ -335,14 +333,17 @@ async def 가위바위보(ctx, opponent: discord.Member):
     if ctx.channel.id in games:
         await ctx.send("이 채널에서 이미 게임이 진행 중입니다.")
         return
-    games[ctx.channel.id] = (ctx.author, None, opponent)
-    # await ctx.send(f"{opponent.mention}, 가위, 바위, 보 중 하나를 선택하세요!")
+    games[ctx.channel.id] = (ctx.author, None, opponent, None)
+
+    dm_channel_player1 = await ctx.author.create_dm()
+    await dm_channel_player1.send(f"/선택 가위, /선택 바위, /선택 보 중 하나를 DM으로 보내주세요!")
+
     dm_channel = await opponent.create_dm()
-    await dm_channel.send(f"{ctx.author.mention}님이 가위바위보 게임을 신청하셨습니다. /선택 가위, /선택 바위, /선택 보 중 하나를 DM으로 보내주세요!(반드시 명령어를 입력하신 분부터 보내주세요)")
-    await ctx.send(f"{opponent.mention}, /선택 가위, /선택 바위, /선택 보 중 하나를 DM으로 보내주세요!(반드시 명령어를 입력하신 분부터 보내주세요)")
+    await dm_channel.send(f"{ctx.author.mention}님이 가위바위보 게임을 신청하셨습니다. /선택 가위, /선택 바위, /선택 보 중 하나를 DM으로 보내주세요!")
+    await ctx.send(f"{opponent.mention}, /선택 가위, /선택 바위, /선택 보 중 하나를 DM으로 보내주세요!")
 
 @bot.command()
-async def choose(ctx, choice):
+async def 선택(ctx, choice):
     # DM에서만 작동
     if not isinstance(ctx.channel, discord.DMChannel):
         print('1')
@@ -350,7 +351,7 @@ async def choose(ctx, choice):
 
     # 사용자의 선택을 games 딕셔너리에서 찾기
     game_channel_id = None
-    for channel_id, (player1, player1_choice, player2) in games.items():
+    for channel_id, (player1, player1_choice, player2, player2_choice) in games.items():
         if ctx.author == player1 or ctx.author == player2:
             print(2)
             game_channel_id = channel_id
@@ -361,45 +362,28 @@ async def choose(ctx, choice):
         await ctx.send("게임이 존재하지 않습니다.")
         return
 
-    player1, player1_choice, player2 = games[game_channel_id]
+    player1, player1_choice, player2, player2_choice = games[game_channel_id]
 
     if ctx.author == player1:
-        print(3)
-        games[game_channel_id] = (player1, choice, player2)
+        player1_choice = choice
     elif ctx.author == player2:
-        if not player1_choice:
-            await ctx.send("다른 플레이어가 아직 선택하지 않았습니다.")
-            return
-        result = determine_winner(player1_choice, choice, player1.display_name, player2.display_name)
+        player2_choice = choice
 
-        # 결과를 해당 서버의 채널에 전송
+        # 두 플레이어 모두 선택을 했다면 결과를 계산
+    if player1_choice and player2_choice:
+        result = determine_winner(player1_choice, player2_choice, player1.display_name, player2.display_name)
         game_channel = bot.get_channel(game_channel_id)
         await game_channel.send(result)
         del games[game_channel_id]
+    else:
+        games[game_channel_id] = (player1, player1_choice, player2, player2_choice)
+
 
 # @bot.command()
-# async def choose(ctx, choice):
-#     if ctx.channel.id not in games:
-#         print('3')
-#         return
-#
-#     player1, player1_choice, player2 = games[ctx.channel.id]
-#
-#     if ctx.author == player1:
-#         print('1')
-#         games[ctx.channel.id] = (player1, choice, player2)
-#     elif ctx.author == player2:
-#         if not player1_choice:
-#             print('2')
-#             await ctx.send("다른 플레이어가 아직 선택하지 않았습니다.")
-#             return
-#         result = determine_winner(player1_choice, choice, player1.display_name, player2.display_name)
-#         await ctx.send(result)
-#         del games[ctx.channel.id]
+# async def 선택(ctx, choice):
+#     choice=f'{choice}'
+#     await choose(ctx,choice=choice)
 
-@bot.command()
-async def 선택(ctx, choice):
-    await choose(ctx,choice)
 
 def determine_winner(choice1, choice2, player1_name, player2_name):
     if choice1 == choice2:
@@ -434,6 +418,51 @@ async def 내전도움말(ctx):
     embedVar.add_field(name='/랜덤포지션 [닉네임] [닉네임] [닉네임] [닉네임] [닉네임]', value='5명의 포지션을 랜덤으로 정해줍니다', inline=False)
 
     await ctx.send(embed=embedVar)
+
+
+
+#메이플 정보 코드
+
+maple_color =0xFF8C00
+
+@bot.command()
+async def 메이플도움말(ctx):
+    embedVar = discord.Embed(title='명령어 목록', color=maple_color)
+    embedVar.add_field(name='/종료이벤트', value='메이플 이벤트 종료일정을 보여줍니다', inline=False)
+    embedVar.add_field(name='/예정이벤트', value='메이플 예정 이벤트를 보여줍니다', inline=False)
+    await ctx.send(embed=embedVar)
+@bot.command()
+async def 종료이벤트(ctx):
+    embedVar = maple_info_eventend()
+    await ctx.send(embed=embedVar)
+
+def maple_info_eventend():
+    embedVar = discord.Embed(title='종료 예정 이벤트', color=maple_color)
+    embedVar.set_thumbnail(url=COMMON_STRINGS_DICT['maple_thumbnail1'])
+    embedVar.add_field(name='버닝 월드 리프', value='9월 13일(수)까지만 가능. 이후 삭제', inline=False)
+    embedVar.add_field(name='캐시 패키지 일부 판매종료',
+                       value='핑크/그레이 네로패키지, 블레어 쿼츠/펄리 헤어, 로얄스타일, 로얄 헤어 9월 13일 까지만 판매', inline=False)
+    embedVar.add_field(name='pc방 접속이벤트', value='9월 21일(목)까지 수령가능', inline=False)
+    return embedVar
+
+@bot.command()
+async def 예정이벤트(ctx):
+    embedVar = maple_info_event()
+    await ctx.send(embed=embedVar)
+
+def maple_info_event():
+    embedVar = discord.Embed(title='예정 이벤트', color=maple_color)
+    embedVar.set_thumbnail(url=COMMON_STRINGS_DICT['maple_thumbnail2'])
+    embedVar.add_field(name='전문기술개선',
+                       value='모든 전문기술 배우는거 가능 \n장인 이상 등급에서 숙련도 하락x\n채집맵이 개인화', inline=False)
+    embedVar.add_field(name='코디 염색 시스템 출시예정',
+                       value='코디템을 염색할수 있는 쿠폰 출시예정(추석 패키지티켓으로 획득 가능성 농후)', inline=False)
+    embedVar.add_field(name='추석이벤트',
+                       value='큐브팩 출시, 추석패키지 티켓 출시예상. 14일 테섭, 21일 본섭적용', inline=False)
+    embedVar.add_field(name='캐시이동', value='9월 22일(금)10시~9월 29일(금)10시', inline=False)
+    return embedVar
+
+
 
 bot.run(TOKEN)
 
