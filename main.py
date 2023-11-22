@@ -81,7 +81,7 @@ def search_user_most(nickname):
     top3=[0,0,0]
     average_rank=[0,0,0]
 
-    ranked_user_stats = api_client.get_user_stats(user_num, SEASON_10)
+    ranked_user_stats = api_client.get_user_stats(user_num, SEASON_11)
 
     for i in range(3):
         try:
@@ -130,7 +130,7 @@ def search_user_ranking(nickname):
     top1_percent=0.0
 
     # fetch and parse ranked game stats
-    ranked_user_stats = api_client.get_user_stats(user_num, SEASON_10)
+    ranked_user_stats = api_client.get_user_stats(user_num, SEASON_11)
 
     # for i in range(3):
     #     try:
@@ -198,6 +198,8 @@ def search_user_normal(nickname):
                 top1_percent = normal_user_stats['userStats'][i]['top1']
 
     except:
+        embedVar = discord.Embed(title=nickname.upper(), description='정보가 없습니다', color=0x0db6e0)
+        return embedVar
         pass
 
     embedVar = discord.Embed(title=nickname.upper(), color=0x0db6e0)
@@ -228,7 +230,7 @@ def search_user_games(nickname):
         game_type = int(game['seasonId'])
         if game_type == NORMAL_SEASON:
             game_type = 'Normal'
-        elif game_type == SEASON_10:
+        elif game_type == SEASON_11:
             game_type = 'Ranked'
             mmr_change = int(game['mmrGain'])
         else:
