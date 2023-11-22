@@ -5,7 +5,7 @@ from discord.ext import commands, tasks
 from ERBSClient import ErbsClient
 from discord_bot_data import *
 
-TOKEN = 'ODA5MDQ4OTY3ODQwMDA2MTQ1.GdOWuP.TYhB22RimQHtFtRhOFD6JxJXNbgMQZTNWFkLYA'
+TOKEN = ''
 BOT_PREFIX=('/')
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=discord.Intents.all())
 
@@ -157,7 +157,7 @@ def search_user_ranking(nickname):
 
     embedVar = discord.Embed(title=nickname.upper(), color=0x0db6e0)
     embedVar.set_thumbnail(url=COMMON_STRINGS_DICT[str(most_character_code)])
-    embedVar.add_field(name='Season 1.0 랭크', value=get_tier(ranked_mmr), inline=True)
+    embedVar.add_field(name='Season 하우스키퍼 랭크', value=get_tier(ranked_mmr), inline=True)
     embedVar.add_field(name='상위 랭킹', value='상위 {0}%'.format(ranking_percent*100), inline=False)
     embedVar.add_field(name='평균 킬수', value='{0}킬'.format(average_kill), inline=False)
     embedVar.add_field(name='평균 사냥수', value='{0}킬'.format(average_hunt), inline=False)
@@ -203,7 +203,7 @@ def search_user_normal(nickname):
     embedVar = discord.Embed(title=nickname.upper(), color=0x0db6e0)
     embedVar.set_thumbnail(url=COMMON_STRINGS_DICT[str(most_character_code)])
     embedVar.add_field(name='노말 게임 플레이 수', value='{0}'.format(total_game), inline=True)
-    embedVar.add_field(name='상위 랭킹', value='상위 {0}%'.format(float(ranking/rank_size * 100),2), inline=False)
+    embedVar.add_field(name='상위 랭킹', value='상위 {0}%'.format(round(float(ranking/rank_size * 100),2)), inline=False)
     embedVar.add_field(name='평균 순위', value='{0}등'.format(average_rank), inline=False)
     embedVar.add_field(name='평균 킬수', value='{0}킬'.format(average_kill), inline=False)
     embedVar.add_field(name='평균 사냥수', value='{0}킬'.format(average_hunt), inline=False)

@@ -18,6 +18,8 @@ PRE_SEASON_9 = 16
 SEASON_9 = 17
 PRE_SEASON_10 = 18
 SEASON_10 = 19
+PRE_SEASON_11 = 20
+SEASON_11 = 21
 
 
 # mode constants
@@ -123,6 +125,8 @@ CHARACTER_LIST = [
     '데비&마를렌',
     '아르다',
     '아비게일',
+    '알론소',
+    '레니',
     'New Character'
 ]
 
@@ -248,7 +252,10 @@ COMMON_STRINGS_DICT = {
     '65': 'https://cdn.discordapp.com/attachments/1149758290566324276/1150071184885567498/Internet_20230909_230952_65.webp',
     '66': 'https://cdn.discordapp.com/attachments/1149758290566324276/1150071185204322365/Internet_20230909_230952_66.webp',
     '67': 'https://cdn.discordapp.com/attachments/1149758290566324276/1150071185518907522/Internet_20230909_230952_67.webp',
-    '68': 'https://cdn.discordapp.com/attachments/1149758290566324276/1150074542585286696/uZ8sEuRf1rUpmjIX3pPss0YjupJZY6mrjK2IXD9lN2lbDLg9_ecjabVspD96sz06rssvSiwSolUrJ2WfA_zvYY8B5PZwcIetxaCyAnTUAAzOJfTiPXRJ-mWuo3vxnH_-D0T9SrSJKyWlI4wXqfH6OQ.webp'
+    '68': 'https://media.discordapp.net/attachments/1149758290566324276/1176923193529868378/tOZ4a7iuy1gkRdRviWw-hfJHwuM-5V0ZiCeeUuw6NjSBNvhomZAbfWV5_YBa7f9PW9ciRxKNL86Gc1UFjt74qQ.webp?ex=6570a223&is=655e2d23&hm=c4e31d1097d8fb1ea63c774aa0a5df593b482d5824d060a8458e725124d93f99&=&format=webp&width=183&height=240',
+    '69': 'https://media.discordapp.net/attachments/1149758290566324276/1176923193819267102/cOq9PLtLBfH_Qi8zuryj0hX7mzw-52upYxdW-Bauy9JQMPJl9Y1TjVPin2V-RJbC1gt5f2GPupmXT0r5iuncng.webp?ex=6570a223&is=655e2d23&hm=a19709a642477e42146a6f5e49ad2f8b514794813ee835de879decf9ee4914a8&=&format=webp&width=183&height=240',
+
+    '70': 'https://cdn.discordapp.com/attachments/1149758290566324276/1150074542585286696/uZ8sEuRf1rUpmjIX3pPss0YjupJZY6mrjK2IXD9lN2lbDLg9_ecjabVspD96sz06rssvSiwSolUrJ2WfA_zvYY8B5PZwcIetxaCyAnTUAAzOJfTiPXRJ-mWuo3vxnH_-D0T9SrSJKyWlI4wXqfH6OQ.webp'
 
 }
 
